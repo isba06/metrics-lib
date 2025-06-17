@@ -1,1 +1,11 @@
-# log-lib
+## Build
+
+`mkdir build && cd build`
+
+`cmake ..`
+
+## Run
+
+`./example`
+
+
