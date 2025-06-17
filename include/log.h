@@ -99,7 +99,7 @@ namespace vk
         template <class T>
         std::shared_ptr<Metric<T>> create(const std::string &name, const T& value)
         {
-            auto m = std::make_shared<Metric<T>>(name);
+            auto m = std::make_shared<Metric<T>>(name, value);
             m_storage.add(m);
             return m;
         }
@@ -116,7 +116,7 @@ namespace vk
                 //ss << std::put_time(std::localtime(&time_t_now), "%F %T");
                 //ss << '.' << std::setw(3) << std::setfill('0') << ms.count();
                 m_file << now;
-                for (auto& metric : m_storage.get_metrics()) {
+                for (auto& [_, metric]: m_storage.get_metrics()) {
                     m_file << " \"" << metric->get_name() << "\" " << metric->get_value_reset();
                 }
 
@@ -136,18 +136,3 @@ namespace vk
     };
 
 } // namespace vk
-
-class Base {
-public:
-    virtual std::string get() = 0;
-}
-
-template <class T>
-    requires std::integral<T> || std::floating_point<T>
-class Derrived : public Base
-{
-    T value;
-public:
-    std::string get() override {...}
-    void set(const T& value) {...}
-};
