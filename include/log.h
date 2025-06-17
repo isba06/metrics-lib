@@ -4,7 +4,7 @@
 #include <fstream>
 #include <chrono>
 #include <concepts>
-#include <map>
+#include <unordered_map>
 #include <atomic>
 #include <memory>
 #include <vector>
@@ -20,6 +20,7 @@ namespace vk
     public:
         virtual ~BaseMetric() = default;
         virtual std::string get_name() const  = 0;
+        virtual std::string get_value() const = 0;
         virtual std::string get_value_reset() = 0;
     };
 
@@ -32,9 +33,14 @@ namespace vk
         Metric(const std::string& name, const T& value) : m_name(name), m_value(value)
         {}
 
-        void get_name() const override noexcept
+        std::string get_name() const noexcept override
         {
             return m_name;
+        }
+        
+        std::string get_value() const override
+        {
+            return std::to_string(m_value);
         }
 
         void set(const T &value)
@@ -61,17 +67,14 @@ namespace vk
             m_metrics[metric->get_name()] = metric;
         }
 
-        std::vector<std::shared_ptr<BaseMetric>> get_metrics() const
+        auto& get_metrics()
         {
             std::shared_lock lock(m_mutex);
-            std::vector<std::shared_ptr<BaseMetric>> result;
-            for (const auto &[_, m] : m_metrics)
-                result.push_back(m);
-            return result;
+            return m_metrics;
         }
 
     private:
-        std::map<std::string, std::shared_ptr<BaseMetric>> m_metrics;
+        std::unordered_map<std::string, std::shared_ptr<BaseMetric>> m_metrics;
         std::shared_mutex m_mutex;
     };
 
@@ -94,13 +97,14 @@ namespace vk
         }
 
         template <class T>
-        std::shared_ptr<Metric<T>> create(const std::string &name)
+        std::shared_ptr<Metric<T>> create(const std::string &name, const T& value)
         {
             auto m = std::make_shared<Metric<T>>(name);
             m_storage.add(m);
             return m;
         }
 
+    private:
         void run()
         {
             while (running) {
@@ -131,4 +135,19 @@ namespace vk
         std::chrono::milliseconds m_interval;
     };
 
-} // namespace loglib
+} // namespace vk
+
+class Base {
+public:
+    virtual std::string get() = 0;
+}
+
+template <class T>
+    requires std::integral<T> || std::floating_point<T>
+class Derrived : public Base
+{
+    T value;
+public:
+    std::string get() override {...}
+    void set(const T& value) {...}
+};

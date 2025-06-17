@@ -1,15 +1,21 @@
 #include "log.h"
 
-int main()
-{
-    // loglib::Log log("output_metrics.txt");
-    // std::cout << "a" << 1;
-    // log << std::make_pair<std::string, int>("CPU", 1) << std::make_pair<std::string, float>("CPU", 1.1);
-    // MetricsLogger metrics_logger;
-    // metrics_logger.log("CPU", 1);
+int main() {
     vk::MetricsStorage storage;
-    std::shared_ptr<vk::Metric<int>> cpu("CPU", 0);
-    storage.add(cpu);
-    vk::MetricsLogger ml("output.txt");
+    vk::MetricsLogger logger(storage, "output.txt", std::chrono::milliseconds(1000));
+    auto cpu = logger.create<int>("CPU", 0);
+    auto https = logger.create<double>("HTTPS", 0);
+    cpu->set(1);
+    https->set(1.1);
+    //logger.run();
+    //std::shared_ptr<vk::BaseMetric> p = std::make_shared<vk::Metric>("CPU", 0);
+    //storage.add(std::make_shared<vk::Metric<int>>("CPU", 0));
+    //storage.add(std::make_shared<vk::Metric<int>>("HTTPS", 0));
+
+    auto st = storage.get_metrics();
+    for(const auto& [_, v] : st){
+        std::cout << v->get_name() << " " << v->get_value() << std::endl;
+    }
+    //ml.event({{"CPU", 1}});
     return 0;
 }
