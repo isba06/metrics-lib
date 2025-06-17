@@ -109,12 +109,6 @@ namespace vk
         {
             while (running) {
                 auto now = std::chrono::system_clock::now();
-                //auto time_t_now = std::chrono::system_clock::to_time_t(now);
-                //auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
-
-                //std::stringstream ss;
-                //ss << std::put_time(std::localtime(&time_t_now), "%F %T");
-                //ss << '.' << std::setw(3) << std::setfill('0') << ms.count();
                 m_file << now;
                 for (auto& [_, metric]: m_storage.get_metrics()) {
                     m_file << " \"" << metric->get_name() << "\" " << metric->get_value_reset();
